@@ -1,0 +1,33 @@
+NexLauncher - Login con Microsoft (se hace UNA sola vez)
+=========================================================
+
+Microsoft exige que cada launcher tenga su propia app registrada en Azure.
+Es gratis. Cuando la tengas, guarda el ID en client_id.txt antes de compilar
+y el boton "Continuar con Microsoft" ira directo al inicio de sesion.
+
+0. Costo: registrar la app es GRATIS (Microsoft Entra ID Free). Desde 2024 Microsoft
+   pide un "directorio" para registrar apps nuevas; si tu cuenta no tiene uno, crea una
+   cuenta gratuita de Azure (https://azure.microsoft.com/free). Suele pedir una tarjeta
+   solo para verificar identidad; no se cobra mientras no actives servicios de pago.
+
+1. Entra a https://portal.azure.com -> "Registros de aplicaciones" -> "Nuevo registro".
+   - Nombre: NexLauncher
+   - Tipos de cuenta: "Solo cuentas personales de Microsoft"
+   - Registrar.
+
+2. Copia el "Id. de aplicacion (cliente)" (formato xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx).
+
+3. Menu "Autenticacion":
+   - "Agregar una plataforma" -> "Aplicaciones moviles y de escritorio".
+   - En URI de redireccion personalizado escribe:  http://localhost
+   - Abajo, en "Permitir flujos de clientes publicos", pon "Si". Guardar.
+
+4. Pide acceso a la API de Minecraft (obligatorio para apps nuevas):
+   https://aka.ms/mce-reviewappid
+   Mientras no te aprueben, el login dira que la app no tiene permiso.
+   El modo offline funciona desde ya.
+
+5. Crea un archivo client_id.txt en esta misma carpeta con SOLO el ID dentro.
+   Vuelve a correr compilar_NexLauncher.bat: el ID queda dentro del .exe.
+
+Sin client_id.txt el launcher te lo pide una vez y lo guarda en %APPDATA%\.nexlauncher.

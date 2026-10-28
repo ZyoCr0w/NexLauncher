@@ -1,0 +1,6 @@
+build/
+dist/
+*.spec
+__pycache__/
+_autoicon.ico
+client_id.txt

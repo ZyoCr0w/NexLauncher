@@ -1,0 +1,32 @@
+NexLauncher - Cómo publicar actualizaciones (se instalan solas)
+================================================================
+
+Cómo funciona
+-------------
+Al abrir, NexLauncher (el .exe) revisa el último Release de GitHub del repositorio
+configurado en REPO_ACTUALIZACIONES (NexLauncher.py, por defecto "ZyoCr0w/NexLauncher").
+Si hay una versión mayor, la descarga en segundo plano, comprueba su SHA256 y te
+pregunta si reiniciar ahora o instalarla al cerrar. Si el hash no coincide, la descarta.
+
+Configuración (una sola vez)
+----------------------------
+1. Crea en GitHub un repositorio PÚBLICO llamado NexLauncher (los Releases de un
+   repositorio privado no se pueden leer sin token).
+2. Sube estos archivos: NexLauncher.py, logo.png, icono.ico, compilar_NexLauncher.bat,
+   .gitignore y la carpeta .github (con workflows/publicar.yml).
+3. En el repositorio: Settings -> Secrets and variables -> Actions -> New repository secret
+   Nombre: AZURE_CLIENT_ID     Valor: tu Client ID de Azure
+   (así queda dentro del .exe sin subir client_id.txt al repositorio).
+4. Si tu repositorio tiene otro nombre, cambia REPO_ACTUALIZACIONES en NexLauncher.py.
+
+Publicar una versión nueva
+--------------------------
+1. Cambia APP_VERSION en NexLauncher.py (por ejemplo "2.6").
+2. git add . && git commit -m "NexLauncher 2.6"
+3. git tag v2.6
+4. git push && git push origin v2.6
+GitHub Actions compila el .exe en Windows, calcula su SHA256 y crea el Release
+(pestaña Actions para ver el progreso, ~3 min). Listo: los launchers se actualizan.
+
+Importante: la etiqueta debe coincidir con APP_VERSION (v2.6 <-> "2.6"); si no, la
+compilación se detiene a propósito para no publicar una versión mal numerada.

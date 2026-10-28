@@ -1,0 +1,59 @@
+# Compila NexLauncher.exe y lo publica como Release cada vez que subes una etiqueta vX.Y
+# (git tag v2.6 && git push origin v2.6). Los launchers instalados se actualizan solos.
+name: Publicar versión
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write   # necesario para crear el Release
+
+jobs:
+  compilar:
+    runs-on: windows-latest
+    env:
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias (versiones fijas)
+        run: python -m pip install pyinstaller==6.22.3 pillow==13.0.0
+
+      - name: Comprobar que APP_VERSION coincide con la etiqueta
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref_name }}".TrimStart("v")
+          $v = (Select-String -Path NexLauncher.py -Pattern '^APP_VERSION = "(.+)"').Matches[0].Groups[1].Value
+          if ($v -ne $tag) { throw "APP_VERSION en NexLauncher.py es $v pero la etiqueta es v$tag" }
+
+      - name: Integrar Client ID de Azure (secreto AZURE_CLIENT_ID)
+        if: env.AZURE_CLIENT_ID != ''
+        shell: pwsh
+        run: Set-Content -Path client_id.txt -Value $env:AZURE_CLIENT_ID -NoNewline
+
+      - name: Compilar
+        shell: pwsh
+        run: |
+          $extra = @()
+          if (Test-Path client_id.txt) { $extra += @("--add-data", "client_id.txt;.") }
+          python -m PyInstaller --onefile --windowed --name NexLauncher --icon icono.ico `
+            --add-data "logo.png;." --add-data "icono.ico;." @extra NexLauncher.py
+
+      - name: Calcular SHA256
+        shell: pwsh
+        run: |
+          $h = (Get-FileHash dist/NexLauncher.exe -Algorithm SHA256).Hash.ToLower()
+          "$h  NexLauncher.exe" | Out-File -FilePath dist/NexLauncher.exe.sha256 -Encoding ascii -NoNewline
+
+      - name: Publicar Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/NexLauncher.exe
+            dist/NexLauncher.exe.sha256
+          generate_release_notes: true
